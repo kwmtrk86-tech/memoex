@@ -53,7 +53,8 @@ function defaultSettings() {
     wrap: 'soft',
     wordMode: 'auto',
     eol: 'LF',
-    tab: 'tab'
+    tab: 'tab',
+    soundEnabled: true
   };
 }
 
@@ -64,6 +65,11 @@ let settings = loadJSON(SETTINGS_KEY, defaultSettings());
 // Migrate / sanity
 if (!state.profiles || !state.profiles[state.currentProfile]) {
   state = defaultState();
+}
+
+// Initialize sound from settings
+if (typeof toggleSound === 'function') {
+  toggleSound(settings.soundEnabled);
 }
 
 function loadJSON(key, fallback) {
@@ -314,6 +320,7 @@ function renderNoteListDebounced() {
 
 /* Tab key inserts tab/space */
 editor.addEventListener('keydown', (e) => {
+  playKey();
   if (e.key === 'Tab' && !e.shiftKey) {
     e.preventDefault();
     const insert = settings.tab === 'tab' ? '\t' : ' '.repeat(Number(settings.tab) || 2);
@@ -375,6 +382,22 @@ $('#fontFamilySelect').addEventListener('change', (e) => {
   document.body.dataset.editorFont = settings.fontFamily;
   persistSettings();
 });
+$('#soundBtn').addEventListener('click', () => {
+  settings.soundEnabled = !settings.soundEnabled;
+  toggleSound(settings.soundEnabled);
+  updateSoundButton();
+  persistSettings();
+});
+function updateSoundButton() {
+  const btn = $('#soundBtn');
+  if (settings.soundEnabled) {
+    btn.classList.remove('disabled');
+    btn.textContent = '🔊 音';
+  } else {
+    btn.classList.add('disabled');
+    btn.textContent = '🔇 音OFF';
+  }
+}
 function setFontSize(n) {
   settings.fontSize = Math.max(10, Math.min(40, n));
   document.documentElement.style.setProperty('--editor-size', settings.fontSize + 'px');
@@ -640,6 +663,7 @@ function applyAllSettings() {
   setWordMode.value = settings.wordMode;
   setEOL.value = settings.eol;
   setTab.value = settings.tab;
+  updateSoundButton();
 }
 
 /* ---------- Utils ---------- */
