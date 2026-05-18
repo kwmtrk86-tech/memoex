@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="light">
+  <div class="bg-decoration" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+  </div>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="profile-switcher">
+          <label for="profileSelect">プロファイル</label>
+          <div class="profile-row">
+            <select id="profileSelect" aria-label="プロファイル選択"></select>
+            <button class="icon-btn" id="addProfileBtn" title="プロファイル追加">＋</button>
+            <button class="icon-btn" id="renameProfileBtn" title="名前変更">✎</button>
+            <button class="icon-btn danger" id="deleteProfileBtn" title="削除">🗑</button>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <input type="search" id="noteSearch" placeholder="ノート検索..." />
+        </div>
+      </div>
+
+      <div class="note-list-wrap">
+        <div class="note-list-header">
+          <span>ノート一覧</span>
+          <button class="icon-btn" id="newNoteBtn" title="新規ノート">＋</button>
+        </div>
+        <ul class="note-list" id="noteList"></ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="theme-switcher">
+          <label>テーマ</label>
+          <div class="theme-buttons">
+            <button class="theme-btn" data-theme="light" title="ライト">☀</button>
+            <button class="theme-btn" data-theme="dark" title="ダーク">🌙</button>
+            <button class="theme-btn" data-theme="glass" title="ガラス">✨</button>
+            <button class="theme-btn" data-theme="sepia" title="セピア">📜</button>
+            <button class="theme-btn" data-theme="midnight" title="ミッドナイト">🌃</button>
+          </div>
+        </div>
+        <button class="text-btn" id="settingsBtn">⚙ 設定</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Tab bar -->
+      <div class="tabbar" id="tabbar">
+        <div class="tabs" id="tabs"></div>
+        <button class="icon-btn tab-add" id="tabAddBtn" title="新規タブ">＋</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button class="tool-btn" id="undoBtn" title="元に戻す (Ctrl+Z)">↶ 戻す</button>
+        <button class="tool-btn" id="redoBtn" title="やり直す (Ctrl+Y)">↷ 進む</button>
+        <span class="sep"></span>
+        <button class="tool-btn" id="findBtn" title="検索 (Ctrl+F)">🔍 検索</button>
+        <button class="tool-btn" id="replaceBtn" title="置換 (Ctrl+H)">⇄ 置換</button>
+        <span class="sep"></span>
+        <button class="tool-btn" id="previewBtn" title="Markdownプレビュー">👁 プレビュー</button>
+        <button class="tool-btn" id="exportBtn" title="エクスポート">📤 出力</button>
+        <button class="tool-btn" id="importBtn" title="インポート">📥 取込</button>
+        <input type="file" id="importInput" accept=".txt,.md,.json" style="display:none" />
+        <span class="sep"></span>
+        <select id="fontFamilySelect" title="フォント">
+          <option value="system">システム</option>
+          <option value="serif">明朝</option>
+          <option value="sans">ゴシック</option>
+          <option value="mono">等幅</option>
+          <option value="rounded">丸ゴシック</option>
+        </select>
+        <button class="tool-btn small" id="fontDecBtn" title="文字小">A-</button>
+        <span id="fontSizeLabel">16</span>
+        <button class="tool-btn small" id="fontIncBtn" title="文字大">A+</button>
+      </div>
+
+      <!-- Find bar -->
+      <div class="findbar hidden" id="findbar">
+        <input type="text" id="findInput" placeholder="検索する単語..." />
+        <span id="findCount" class="find-count">0 / 0</span>
+        <button class="icon-btn" id="findPrev" title="前へ">▲</button>
+        <button class="icon-btn" id="findNext" title="次へ">▼</button>
+        <input type="text" id="replaceInput" placeholder="置換後..." class="hidden" />
+        <button class="tool-btn small hidden" id="replaceOne">置換</button>
+        <button class="tool-btn small hidden" id="replaceAll">全置換</button>
+        <label class="check"><input type="checkbox" id="findCase" /> 大小区別</label>
+        <button class="icon-btn" id="findClose" title="閉じる">✕</button>
+      </div>
+
+      <!-- Editor area -->
+      <div class="editor-area">
+        <div class="title-row">
+          <input type="text" id="titleInput" class="title-input" placeholder="ノートタイトル..." />
+          <span class="save-state" id="saveState">保存済み</span>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="editor" spellcheck="false" placeholder="ここに書く..."></textarea>
+          <div id="preview" class="preview hidden"></div>
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div class="statusbar">
+        <span><span class="label">文字</span> <strong id="statChar">0</strong></span>
+        <span><span class="label">単語</span> <strong id="statWord">0</strong></span>
+        <span><span class="label">行</span> <strong id="statLine">0</strong></span>
+        <span><span class="label">段落</span> <strong id="statPara">0</strong></span>
+        <span><span class="label">読了</span> <strong id="statRead">0分</strong></span>
+        <span class="spacer"></span>
+        <span><span class="label">カーソル</span> <strong id="statCursor">1:1</strong></span>
+        <span><span class="label">選択</span> <strong id="statSel">0</strong></span>
+      </div>
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal hidden" id="settingsModal">
+    <div class="modal-bg" data-close></div>
+    <div class="modal-body">
+      <header>
+        <h2>設定</h2>
+        <button class="icon-btn" data-close>✕</button>
+      </header>
+      <div class="settings-grid">
+        <label>自動保存の間隔
+          <select id="setAutosave">
+            <option value="300">300ms（高速）</option>
+            <option value="800">800ms（標準）</option>
+            <option value="2000">2秒（省エネ）</option>
+          </select>
+        </label>
+        <label>行の折り返し
+          <select id="setWrap">
+            <option value="soft">折返す</option>
+            <option value="off">折返さない</option>
+          </select>
+        </label>
+        <label>単語カウント方式
+          <select id="setWordMode">
+            <option value="auto">自動（日本語/英語混在）</option>
+            <option value="space">空白区切り</option>
+            <option value="cjk">日本語(1字=1語)</option>
+          </select>
+        </label>
+        <label>改行コード
+          <select id="setEOL">
+            <option value="LF">LF</option>
+            <option value="CRLF">CRLF</option>
+          </select>
+        </label>
+        <label>タブをスペースに
+          <select id="setTab">
+            <option value="tab">タブ文字</option>
+            <option value="2">2スペース</option>
+            <option value="4">4スペース</option>
+          </select>
+        </label>
+        <div class="full">
+          <button class="tool-btn danger" id="resetAllBtn">全データを削除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
